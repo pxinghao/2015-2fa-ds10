@@ -56,8 +56,8 @@ features = sort(sortedLikelihoods(1:20,2))';
 
 
 knnAccuracies = zeros([1 1000]);
-
-for nfeatures = 1:1000
+%%
+for nfeatures = 4999
   
   tempGenre = genre;
   predictions = zeros(size(genre));

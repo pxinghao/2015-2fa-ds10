@@ -65,10 +65,11 @@ object Driver {
     genreTests(1) = isHipHopGenre
 
     val trackGenreFlags: Array[Array[Boolean]] = Array.fill[Array[Boolean]](trackIDs.length)(Array.fill[Boolean](nGenres)(false))
+    val trackGenre : Array[Int] = Array.fill[Int](trackIDs.length)(-1)
 
     val countCommon: AtomicInteger = new AtomicInteger(0)
 
-    val tagMap: HashMap[String, Map[String, Any]] = new HashMap[String, Map[String, Any]]()
+//    val tagMap: ConcurrentHashMap[String, Map[String, Any]] = new ConcurrentHashMap[String, Map[String, Any]]()
 
     val lastfmFiles = FileParsers.recursiveListFiles(new File("../data/lastfm_subset/"), new Regex(".json"))
     val lastfmData: Array[Map[String, Any]] = new Array[Map[String, Any]](lastfmFiles.length)
@@ -90,7 +91,7 @@ object Driver {
           val lastfmTrackTags = FileParsers.parse_lastfm(f)
           lastfmData(fi) = lastfmTrackTags
 
-          tagMap(f.getName.dropRight(5)) = lastfmTrackTags
+//          tagMap(f.getName.dropRight(5)) = lastfmTrackTags
 
           if (trackIDMap.contains(f.getName.dropRight(5))) {
             val trackID = trackIDMap.get(f.getName.dropRight(5)).get
@@ -132,7 +133,8 @@ object Driver {
       var count = 0
       while (j < nGenres) {
         if (trackGenreFlags(i)(j)) {
-          //println(s"Track ${trackIDs(i)} [${lastfmData(lastfmFilenameMap(trackIDs(i))).getOrElse("title", "")}] is of genre $j")
+          println(s"Track ${trackIDs(i)} [${lastfmData(lastfmFilenameMap(trackIDs(i))).getOrElse("title", "")}] is of genre $j")
+          trackGenre(i) = j
           count += 1
         }
         j += 1
@@ -144,6 +146,7 @@ object Driver {
           trackGenreFlags(i)(j) = false
           j += 1
         }
+        trackGenre(i) = -1
       }
       i += 1
     }
@@ -156,42 +159,26 @@ object Driver {
     val include: Array[Boolean] = Array.fill[Boolean](trackIDs.length)(false)
     i = 0
     while (i < trackIDs.length) {
-      j = 0
-      while (j < nGenres) {
-        if (trackGenreFlags(i)(j)) {
-          include(i) = true
-        }
-        j += 1
+      if (trackGenre(i) != -1) {
+        println(s"trackGenre($i) = ${trackGenre(i)}")
+        include(i) = true
       }
       i += 1
     }
 
     i = 0
     while (i < trackIDs.length) {
-      var validData = false
-      j = 0
-      while (j < nGenres && !validData) {
-        if (trackGenreFlags(i)(j)) {
-          validData = true
-        }
-        j += 1
-      }
+      val trueClass = trackGenre(i)
 
-      if (validData) {
-        var trueClass = -1
-        j = 0
-        while (j < nGenres) {
-          if (trackGenreFlags(i)(j)) trueClass = j
-          j += 1
-        }
+      if (trueClass != -1) {
         include(i) = false
 
         val knn = new KNearestNeighbors(5)
-        knn.train(wordCounts, trackGenreFlags, include, null)
+        knn.train(wordCounts, trackGenre, include, null)
         val estimatedClass = knn.test(wordCounts, i)
 
 //        val nb = new NaiveBayes
-//        nb.train(wordCounts, trackGenreFlags, include, new NaiveBayesParams(1.0))
+//        nb.train(wordCounts, trackGenre, include, new NaiveBayesParams(1.0))
 //        val estimatedClass = nb.test(wordCounts, i)
 
         if (trueClass == estimatedClass) {
@@ -209,14 +196,8 @@ object Driver {
     val genreOutput = new PrintWriter(new File("../data/genredata.dat"))
     i = 0
     while (i < trackIDs.length) {
-      var validData = false
-      j = 0
-      while (j < nGenres && !validData) {
-        if (trackGenreFlags(i)(j)) {
-          genreOutput.print(s"$j\t")
-          validData = true
-        }
-        j += 1
+      if (trackGenre(i) != -1) {
+        genreOutput.print(s"${trackGenre(i)}\t")
       }
       i += 1
     }
@@ -228,19 +209,13 @@ object Driver {
     i = 0
     var countData = 0
     while (i < trackIDs.length) {
-      var validData = false
-      j = 0
-      while (j < nGenres && !validData) {
-        if (trackGenreFlags(i)(j)) {
-          countData += 1
-          var ii = 0
-          while (ii < wordCounts.nSuccessor(i)) {
-            wcOutput.println(s"$countData\t${wordCounts.succ(i, ii) + 1}\t${wordCounts.edgeVal(i, ii)}")
-            ii += 1
-          }
-          validData = true
+      if (trackGenre(i) != -1) {
+        countData += 1
+        var ii = 0
+        while (ii < wordCounts.nSuccessor(i)) {
+          wcOutput.println(s"$countData\t${wordCounts.succ(i, ii) + 1}\t${wordCounts.edgeVal(i, ii)}")
+          ii += 1
         }
-        j += 1
       }
       i += 1
     }

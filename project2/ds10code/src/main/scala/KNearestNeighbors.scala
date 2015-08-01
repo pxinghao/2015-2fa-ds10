@@ -2,15 +2,15 @@ import java.util.Random
 
 class KNearestNeighbors (k: Int) extends Model {
   var trainWordCounts : SparseBipartite[Int] = null
-  var trainTrackGenreFlags : Array[Array[Boolean]] = null
+  var trainClassLabels : Array[Int] = null
   var trainInclude: Array[Boolean] = null
   var nGenres = 0
 
-  def train(wordCounts: SparseBipartite[Int], trackGenreFlags: Array[Array[Boolean]], include: Array[Boolean], params: Params) : Unit = {
+  def train(wordCounts: SparseBipartite[Int], classLabels: Array[Int], include: Array[Boolean], params: Params) : Unit = {
     trainWordCounts = wordCounts
-    trainTrackGenreFlags = trackGenreFlags
+    trainClassLabels = classLabels
     trainInclude = include
-    nGenres = trackGenreFlags(0).length
+    nGenres = classLabels.max + 1
   }
 
   def test(testWordCounts: SparseBipartite[Int], idx_test: Int) : Int = {
@@ -22,7 +22,7 @@ class KNearestNeighbors (k: Int) extends Model {
     idx_train = 0
     while (idx_train < nTrainData_all){
       if (trainInclude(idx_train)) {
-        distances(idx_train) = WordVectorDistances.l1Dist_norm(trainWordCounts, idx_train, testWordCounts, idx_test)
+        distances(idx_train) = WordVectorDistances.l1Dist(trainWordCounts, idx_train, testWordCounts, idx_test)
       }
       idx_train += 1
     }
@@ -36,13 +36,7 @@ class KNearestNeighbors (k: Int) extends Model {
     val genreVotes : Array[Int] = new Array(nGenres)
     var i, j = 0
     while (i < k){
-      j = 0
-      while (j < nGenres){
-        if (trainTrackGenreFlags(topkIndices(i))(j)){
-          genreVotes(j) += 1
-        }
-        j += 1
-      }
+      genreVotes(trainClassLabels(topkIndices(i))) += 1
       i += 1
     }
 

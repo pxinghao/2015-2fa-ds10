@@ -9,8 +9,8 @@ class NaiveBayes extends Model {
   var prior : Array[Double] = null
   var likelihoods: Array[Array[Double]] = null
 
-  def train(wordCounts: SparseBipartite[Int], trackGenreFlags: Array[Array[Boolean]], include: Array[Boolean], params: Params) : Unit = {
-    nGenres = trackGenreFlags(0).length
+  def train(wordCounts: SparseBipartite[Int], classLabels: Array[Int], include: Array[Boolean], params: Params) : Unit = {
+    nGenres = classLabels.max + 1
     nWords = wordCounts.numRightVertices()
 
     val priorCount = params.asInstanceOf[NaiveBayesParams].getPriorCount
@@ -20,23 +20,15 @@ class NaiveBayes extends Model {
 
     var sumCount = 0.0
 
-    val genreArray : Array[Int] = Array.fill[Int](trackGenreFlags.length)(-1)
 
     // Compute priors
     var sumPriors = 0
     prior = Array.fill[Double](nGenres)(0.0)
     i = 0
-    while (i < trackGenreFlags.length){
+    while (i < classLabels.length){
       if (include(i)) {
-        j = 0
-        while (j < nGenres) {
-          if (trackGenreFlags(i)(j)) {
-            genreArray(i) = j
-            sumPriors += 1
-            prior(j) += 1
-          }
-          j += 1
-        }
+        sumPriors += 1
+        prior(classLabels(i)) += 1
       }
       i += 1
     }
@@ -54,7 +46,7 @@ class NaiveBayes extends Model {
         nSucc = wordCounts.nSuccessor(i)
         j = 0
         while (j < nSucc) {
-          likelihoods(genreArray(i))(wordCounts.succ(i, j)) += wordCounts.edgeVal(i, j)
+          likelihoods(classLabels(i))(wordCounts.succ(i, j)) += wordCounts.edgeVal(i, j)
           j += 1
         }
       }
