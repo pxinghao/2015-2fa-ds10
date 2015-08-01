@@ -90,7 +90,6 @@ class NaiveBayes extends Model {
     (0 until nGenres).foreach(gi => {
       logProbs(gi) = prior(gi)
     })
-    println()
 
     i = 0
     while (i < nSucc){

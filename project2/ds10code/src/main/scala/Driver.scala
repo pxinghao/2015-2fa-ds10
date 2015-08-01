@@ -2,7 +2,7 @@ import java.util.concurrent.atomic.{AtomicInteger, AtomicIntegerArray}
 
 import scala.collection.JavaConversions._
 
-import java.io.File
+import java.io.{PrintWriter, File}
 import java.util.concurrent.{ConcurrentHashMap, Callable, Executors, ExecutorService}
 
 import scala.collection.mutable
@@ -51,6 +51,10 @@ object Driver {
     val trackIDMap: mutable.HashMap[String, Int] = mxmdata._3
     val wordCounts: SparseBipartite[Int] = mxmdata._4
 
+    val wordsOutput = new PrintWriter(new File("../data/words.dat"), "UTF-8")
+    wordsArray.foreach(w => wordsOutput.println(s"$w"))
+    wordsOutput.close()
+    println("Done with words output")
 
     // Parse lastfm data to extract songs for which we have lyrics (i.e. in musicXmatch data),
     // and belongs to either country or Hip-Hop
@@ -103,6 +107,7 @@ object Driver {
               }
               i += 1
             }
+            /*
             if (hasValidGenre) {
               print(s"$countCommon [")
               i = 0
@@ -113,6 +118,7 @@ object Driver {
               }
               println(s"]\t${f.getName.dropRight(5)}:\t${lastfmTrackTags.getOrElse("title", "")}")
             }
+            */
           }
           fi += nThreads
         }
@@ -121,18 +127,12 @@ object Driver {
     workerThreads.invokeAll(tasks_processLastfmData)
 
     i = 0
-    while (i < nGenres) {
-      println(s"Genre #$i has ${genreCounts.get(i)} tracks")
-      i += 1
-    }
-
-    i = 0
     while (i < trackIDs.length) {
       j = 0
       var count = 0
       while (j < nGenres) {
         if (trackGenreFlags(i)(j)) {
-          println(s"Track ${trackIDs(i)} [${lastfmData(lastfmFilenameMap(trackIDs(i))).getOrElse("title", "")}] is of genre $j")
+          //println(s"Track ${trackIDs(i)} [${lastfmData(lastfmFilenameMap(trackIDs(i))).getOrElse("title", "")}] is of genre $j")
           count += 1
         }
         j += 1
@@ -151,7 +151,7 @@ object Driver {
     workerThreads.shutdown()
 
     // Do LOOCV 1-NN
-
+    /*
     var countCorrect = 0
     var countWrong = 0
     val include: Array[Boolean] = Array.fill[Boolean](trackIDs.length)(false)
@@ -200,50 +200,56 @@ object Driver {
         } else {
           countWrong += 1
         }
-        println(s"${trueClass}\t$estimatedClass\t$countCorrect\t$countWrong\t${countCorrect.toDouble / (countCorrect + countWrong).toDouble * 100.0}%")
+//        println(s"${trueClass}\t$estimatedClass\t$countCorrect\t$countWrong\t${countCorrect.toDouble / (countCorrect + countWrong).toDouble * 100.0}%")
         include(i) = true
       }
       i += 1
     }
+    */
 
 
-    if (false) {
-      i = 0
-      while (i < trackIDs.length) {
-        var validData = false
-        j = 0
-        while (j < nGenres && !validData) {
-          if (trackGenreFlags(i)(j)) {
-            print(s"$j\t")
-            validData = true
-          }
-          j += 1
+    val genreOutput = new PrintWriter(new File("../data/genredata.dat"))
+    i = 0
+    while (i < trackIDs.length) {
+      var validData = false
+      j = 0
+      while (j < nGenres && !validData) {
+        if (trackGenreFlags(i)(j)) {
+          genreOutput.print(s"$j\t")
+          validData = true
         }
-        i += 1
+        j += 1
       }
-      println()
-
-      i = 0
-      var countData = 0
-      while (i < trackIDs.length) {
-        var validData = false
-        j = 0
-        while (j < nGenres && !validData) {
-          if (trackGenreFlags(i)(j)) {
-            countData += 1
-            var ii = 0
-            while (ii < wordCounts.nSuccessor(i)) {
-              println(s"$countData\t${wordCounts.succ(i, ii) + 1}\t${wordCounts.edgeVal(i, ii)}")
-              ii += 1
-            }
-            validData = true
-          }
-          j += 1
-        }
-        i += 1
-      }
-
+      i += 1
     }
+    genreOutput.println()
+    genreOutput.close()
+    println("Done with genre output")
+
+    val wcOutput = new PrintWriter(new File("../data/wordcounts.dat"))
+    i = 0
+    var countData = 0
+    while (i < trackIDs.length) {
+      var validData = false
+      j = 0
+      while (j < nGenres && !validData) {
+        if (trackGenreFlags(i)(j)) {
+          countData += 1
+          var ii = 0
+          while (ii < wordCounts.nSuccessor(i)) {
+            wcOutput.println(s"$countData\t${wordCounts.succ(i, ii) + 1}\t${wordCounts.edgeVal(i, ii)}")
+            ii += 1
+          }
+          validData = true
+        }
+        j += 1
+      }
+      i += 1
+    }
+    wcOutput.println(s"$countData\t${wordCounts.numRightVertices()}\t0")
+    wcOutput.close()
+    println("Done with word-count output")
+
   }
 
 }
