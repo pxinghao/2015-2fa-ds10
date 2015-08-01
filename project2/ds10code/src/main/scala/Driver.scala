@@ -18,25 +18,43 @@ object Driver {
     isCountry = false
     i = 0
     while (i < tags.length){
+//      if (tags(i)(0) == "country" || tags(i)(0) == "Alt-country" || tags(i)(0) == "classic country" || tags(i)(0) == "country rock") isCountry = true
       if (tags(i)(0) == "country") isCountry = true
+//      if (tags(i)(0).toLowerCase contains "country") isCountry = true
       i += 1
     }
 
     isCountry
   }
 
-  def isHipHopGenre(tags: Array[List[String]]) : Boolean = {
+  def isPopGenre(tags: Array[List[String]]) : Boolean = {
     var i = 0
-    var isCountry = false
+    var isPop = false
 
-    isCountry = false
+    isPop = false
     i = 0
     while (i < tags.length){
-      if (tags(i)(0) == "Hip-Hop") isCountry = true
+      if (tags(i)(0) == "pop") isPop = true
       i += 1
     }
 
-    isCountry
+    isPop
+  }
+
+  def isHipHopGenre(tags: Array[List[String]]) : Boolean = {
+    var i = 0
+    var isHipHop = false
+
+    isHipHop = false
+    i = 0
+    while (i < tags.length){
+//      if (tags(i)(0) == "Hip-Hop" || tags(i)(0) == "hip hop") isHipHop = true
+      if (tags(i)(0) == "Hip-Hop") isHipHop = true
+//      if ((tags(i)(0).toLowerCase() contains "hip") && (tags(i)(0).toLowerCase() contains "hop")) isHipHop = true
+      i += 1
+    }
+
+    isHipHop
   }
 
   def main(args: Array[String]) : Unit = {
@@ -63,6 +81,7 @@ object Driver {
     val genreTests: Array[Array[List[String]] => Boolean] = new Array[Array[List[String]] => Boolean](nGenres)
     genreTests(0) = isCountryGenre
     genreTests(1) = isHipHopGenre
+//    genreTests(2) = isPopGenre
 
     val trackGenreFlags: Array[Array[Boolean]] = Array.fill[Array[Boolean]](trackIDs.length)(Array.fill[Boolean](nGenres)(false))
     val trackGenre : Array[Int] = Array.fill[Int](trackIDs.length)(-1)

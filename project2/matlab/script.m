@@ -3,6 +3,8 @@ features = 1:4999;
 
 genre = load('../data/genredata.dat');
 
+nGenres = max(genre);
+
 counts = spconvert(load('../data/wordcounts.dat'));
 counts = counts(:,features);
 
@@ -19,9 +21,9 @@ for i = 1:length(genre)
   
   tempGenre(i) = -1;
   
-  [prior, likelihood] = naiveBayesTrain(2, tempGenre, counts, 1);
+  [prior, likelihood] = naiveBayesTrain(nGenres, tempGenre, counts, 1);
   
-  [predictedClass, predictedLogProbs] = naiveBayesTest(2, prior, likelihood, counts(i,:));
+  [predictedClass, predictedLogProbs] = naiveBayesTest(nGenres, prior, likelihood, counts(i,:));
   
   predictions(i) = predictedClass;
   
@@ -29,9 +31,9 @@ for i = 1:length(genre)
   
 end
 
-confusionMatrix = zeros([2 2]);
-for i = 1:2
-  for j = 1:2
+confusionMatrix = zeros([nGenres nGenres]);
+for i = 1:nGenres
+  for j = 1:nGenres
     confusionMatrix(i,j) = sum(predictions==i & genre==j);
   end
 end
@@ -55,7 +57,7 @@ doNormalize = true;
 
 fprintf('\ndoBinary = %i, doNormalize = %i\n',doBinary,doNormalize);
 
-for nfeatures = unique([1:100 2.^(0:12) 4999])
+for nfeatures = 4999%unique([1:100 2.^(0:12) 4999])
   
   tempGenre = genre;
   predictions = zeros(size(genre));
@@ -64,11 +66,12 @@ for nfeatures = unique([1:100 2.^(0:12) 4999])
     
     tempGenre(i) = -1;
     
-    [prior, likelihood] = naiveBayesTrain(2, tempGenre, counts, 1);
+    [prior, likelihood] = naiveBayesTrain(nGenres, tempGenre, counts, 1);
     
-    sortedLikelihoods = flipud(sortrows([abs(likelihood(1,:) - likelihood(2,:)); 1:nWords]'));
+    sortedLikelihoods = flipud(sortrows([abs(max(likelihood) - min(likelihood)); 1:nWords]'));
     
     features = sort(sortedLikelihoods(1:nfeatures,2))';
+%     words(features)
     
     % Extract features
     transformedCounts = counts(:, features);
@@ -83,7 +86,7 @@ for nfeatures = unique([1:100 2.^(0:12) 4999])
       transformedCounts = transformedCounts ./ repmat(sum(transformedCounts,2),[1 size(transformedCounts,2)]);
     end
   
-    predictedClass = kNearestNeighbors(6, transformedCounts(i,:), 2, tempGenre, transformedCounts);
+    predictedClass = kNearestNeighbors(6, transformedCounts(i,:), nGenres, tempGenre, transformedCounts);
     
     predictions(i) = predictedClass;
     
