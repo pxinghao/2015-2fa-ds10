@@ -197,7 +197,7 @@ object Driver {
     i = 0
     while (i < trackIDs.length) {
       if (trackGenre(i) != -1) {
-        genreOutput.print(s"${trackGenre(i)}\t")
+        genreOutput.print(s"${trackGenre(i) + 1}\t")
       }
       i += 1
     }

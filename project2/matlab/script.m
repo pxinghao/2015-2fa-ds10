@@ -1,7 +1,7 @@
 % features = [2     3     6     8    10    11    14    18    19    20    25    26    27    30    36    52    60    81   189   455   555];
 features = 1:4999;
 
-genre = load('../data/genredata.dat') + 1;
+genre = load('../data/genredata.dat');
 
 counts = spconvert(load('../data/wordcounts.dat'));
 counts = counts(:,features);
