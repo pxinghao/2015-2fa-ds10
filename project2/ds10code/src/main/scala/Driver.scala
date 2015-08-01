@@ -45,7 +45,7 @@ object Driver {
 
 
     // Parse musicXmatch data
-    val mxmdata = FileParsers.parse_musicXmatch(new File("../data/mxm_dataset_train.txt"))
+    val mxmdata = FileParsers.parse_musicXmatch(new File("../data/mxm_dataset.txt"))
     val wordsArray: Array[String] = mxmdata._1
     val trackIDs: Array[String] = mxmdata._2
     val trackIDMap: mutable.HashMap[String, Int] = mxmdata._3
@@ -150,8 +150,7 @@ object Driver {
 
     workerThreads.shutdown()
 
-    // Do LOOCV 1-NN
-    /*
+    // Do LOOCV k-NN
     var countCorrect = 0
     var countWrong = 0
     val include: Array[Boolean] = Array.fill[Boolean](trackIDs.length)(false)
@@ -187,25 +186,24 @@ object Driver {
         }
         include(i) = false
 
-        //        val knn = new KNearestNeighbors(5)
-        //        knn.train(wordCounts, trackGenreFlags, include, null)
-        //        val estimatedClass = knn.test(wordCounts, i)
+        val knn = new KNearestNeighbors(5)
+        knn.train(wordCounts, trackGenreFlags, include, null)
+        val estimatedClass = knn.test(wordCounts, i)
 
-        val nb = new NaiveBayes
-        nb.train(wordCounts, trackGenreFlags, include, new NaiveBayesParams(1.0))
-        val estimatedClass = nb.test(wordCounts, i)
+//        val nb = new NaiveBayes
+//        nb.train(wordCounts, trackGenreFlags, include, new NaiveBayesParams(1.0))
+//        val estimatedClass = nb.test(wordCounts, i)
 
         if (trueClass == estimatedClass) {
           countCorrect += 1
         } else {
           countWrong += 1
         }
-//        println(s"${trueClass}\t$estimatedClass\t$countCorrect\t$countWrong\t${countCorrect.toDouble / (countCorrect + countWrong).toDouble * 100.0}%")
+        println(s"${trueClass}\t$estimatedClass\t$countCorrect\t$countWrong\t${countCorrect.toDouble / (countCorrect + countWrong).toDouble * 100.0}%")
         include(i) = true
       }
       i += 1
     }
-    */
 
 
     val genreOutput = new PrintWriter(new File("../data/genredata.dat"))

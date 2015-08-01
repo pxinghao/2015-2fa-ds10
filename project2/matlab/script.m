@@ -1,5 +1,5 @@
 % features = [2     3     6     8    10    11    14    18    19    20    25    26    27    30    36    52    60    81   189   455   555];
-features = 1:5000;
+features = 1:4999;
 
 genre = load('../data/genredata.dat') + 1;
 
@@ -49,6 +49,38 @@ mean(predictions == genre)
 
 [prior, likelihood] = naiveBayesTrain(2, genre, counts, 1);
 
-sortedLikelihoods = sortrows([abs(likelihood(1,:) - likelihood(2,:)); 1:nWords]');
+sortedLikelihoods = flipud(sortrows([abs(likelihood(1,:) - likelihood(2,:)); 1:nWords]'));
 
-features = sort(sortedLikelihoods(end-100:end,2))';
+features = sort(sortedLikelihoods(1:20,2))';
+
+
+
+knnAccuracies = zeros([1 1000]);
+
+for nfeatures = 1:1000
+  
+  tempGenre = genre;
+  predictions = zeros(size(genre));
+  
+  for i = 1:length(genre)
+    
+    tempGenre(i) = -1;
+    
+    [prior, likelihood] = naiveBayesTrain(2, tempGenre, counts, 1);
+    
+    sortedLikelihoods = flipud(sortrows([abs(likelihood(1,:) - likelihood(2,:)); 1:nWords]'));
+    
+    features = sort(sortedLikelihoods(1:nfeatures,2))';
+  
+    predictedClass = kNearestNeighbors(6, counts(i,:), 2, tempGenre, counts, features);
+    
+    predictions(i) = predictedClass;
+    
+    tempGenre(i) = genre(i);
+    
+  end
+  
+  knnAccuracies(nfeatures) = mean(predictions == genre);
+  
+  fprintf('With %i features, LOOCV accuracy = %4.2f%%\n', nfeatures, knnAccuracies(nfeatures) * 100)
+end

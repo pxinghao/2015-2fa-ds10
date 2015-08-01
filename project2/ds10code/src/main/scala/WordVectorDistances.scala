@@ -24,6 +24,14 @@ object WordVectorDistances {
         i_test += 1
       }
     }
+    while (i_train < nSucc_train){
+      d += math.abs(trainWordCounts.edgeVal(idx_train, i_train)).toDouble
+      i_train += 1
+    }
+    while (i_test < nSucc_test){
+      d += math.abs(testWordCounts.edgeVal(idx_test, i_test)).toDouble
+      i_test += 1
+    }
 
     d
   }
@@ -66,6 +74,14 @@ object WordVectorDistances {
         i_test += 1
       }
     }
+    while (i_train < nSucc_train){
+      d += math.abs(trainWordCounts.edgeVal(idx_train, i_train) / sum_train.toDouble)
+      i_train += 1
+    }
+    while (i_test < nSucc_test){
+      d += math.abs(testWordCounts.edgeVal(idx_test, i_test) / sum_test.toDouble)
+      i_test += 1
+    }
 
     d
   }
@@ -107,6 +123,14 @@ object WordVectorDistances {
         d += math.abs(1.0 / sum_test.toDouble)
         i_test += 1
       }
+    }
+    while (i_train < nSucc_train){
+      d += math.abs(1.0 / sum_train.toDouble)
+      i_train += 1
+    }
+    while (i_test < nSucc_test){
+      d += math.abs(1.0 / sum_test.toDouble)
+      i_test += 1
     }
 
     d
