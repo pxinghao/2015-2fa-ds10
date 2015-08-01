@@ -86,6 +86,43 @@ object WordVectorDistances {
     d
   }
 
+  def l1Dist_binary(trainWordCounts: SparseBipartite[Int], idx_train: Int, testWordCounts: SparseBipartite[Int], idx_test: Int) : Double = {
+    var d = 0.0
+
+    val nSucc_train = trainWordCounts.nSuccessor(idx_train)
+    val nSucc_test  = testWordCounts.nSuccessor(idx_test)
+
+    var i_train, i_test = 0
+
+    i_train = 0
+    i_test  = 0
+    while (i_train < nSucc_train && i_test < nSucc_test){
+      val word_train : Int = trainWordCounts.succ(idx_train, i_train)
+      val word_test  : Int = testWordCounts.succ(idx_test, i_test)
+      if (word_train == word_test){
+        d += math.abs(1.0 - 1.0)
+        i_train += 1
+        i_test += 1
+      }else if (word_train < word_test){
+        d += math.abs(1.0)
+        i_train += 1
+      }else if (word_train > word_test){
+        d += math.abs(1.0)
+        i_test += 1
+      }
+    }
+    while (i_train < nSucc_train){
+      d += math.abs(1.0)
+      i_train += 1
+    }
+    while (i_test < nSucc_test){
+      d += math.abs(1.0)
+      i_test += 1
+    }
+
+    d
+  }
+
   def l1Dist_binarynorm(trainWordCounts: SparseBipartite[Int], idx_train: Int, testWordCounts: SparseBipartite[Int], idx_test: Int) : Double = {
     var d = 0.0
 

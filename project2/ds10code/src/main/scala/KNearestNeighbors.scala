@@ -22,7 +22,7 @@ class KNearestNeighbors (k: Int) extends Model {
     idx_train = 0
     while (idx_train < nTrainData_all){
       if (trainInclude(idx_train)) {
-        distances(idx_train) = WordVectorDistances.l1Dist(trainWordCounts, idx_train, testWordCounts, idx_test)
+        distances(idx_train) = WordVectorDistances.l1Dist_binarynorm(trainWordCounts, idx_train, testWordCounts, idx_test)
       }
       idx_train += 1
     }

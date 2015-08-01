@@ -45,19 +45,17 @@ mean(predictions == genre)
 
 
 
-% Most discriminative features
-
-[prior, likelihood] = naiveBayesTrain(2, genre, counts, 1);
-
-sortedLikelihoods = flipud(sortrows([abs(likelihood(1,:) - likelihood(2,:)); 1:nWords]'));
-
-features = sort(sortedLikelihoods(1:20,2))';
 
 
-
-knnAccuracies = zeros([1 1000]);
 %%
-for nfeatures = 4999
+knnAccuracies = zeros([1 1000]);
+
+doBinary = true;
+doNormalize = true;
+
+fprintf('\ndoBinary = %i, doNormalize = %i\n',doBinary,doNormalize);
+
+for nfeatures = unique([1:100 2.^(0:12) 4999])
   
   tempGenre = genre;
   predictions = zeros(size(genre));
@@ -71,8 +69,21 @@ for nfeatures = 4999
     sortedLikelihoods = flipud(sortrows([abs(likelihood(1,:) - likelihood(2,:)); 1:nWords]'));
     
     features = sort(sortedLikelihoods(1:nfeatures,2))';
+    
+    % Extract features
+    transformedCounts = counts(:, features);
+    
+    % Binarize
+    if doBinary
+      transformedCounts = transformedCounts > 0;
+    end
+    
+    % Normalize
+    if doNormalize
+      transformedCounts = transformedCounts ./ repmat(sum(transformedCounts,2),[1 size(transformedCounts,2)]);
+    end
   
-    predictedClass = kNearestNeighbors(6, counts(i,:), 2, tempGenre, counts, features);
+    predictedClass = kNearestNeighbors(6, transformedCounts(i,:), 2, tempGenre, transformedCounts);
     
     predictions(i) = predictedClass;
     
@@ -82,5 +93,8 @@ for nfeatures = 4999
   
   knnAccuracies(nfeatures) = mean(predictions == genre);
   
-  fprintf('With %i features, LOOCV accuracy = %4.2f%%\n', nfeatures, knnAccuracies(nfeatures) * 100)
+  fprintf('With %i features, LOOCV accuracy = %4.2f%%\n', nfeatures, knnAccuracies(nfeatures) * 100);
 end
+
+figure(1)
+validpoints = 1:4999; plot(validpoints(knnAccuracies~=0),knnAccuracies(knnAccuracies~=0))
