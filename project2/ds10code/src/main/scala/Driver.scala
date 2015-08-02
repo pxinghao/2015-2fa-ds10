@@ -81,10 +81,12 @@ object Driver {
     val genreTests: Array[Array[List[String]] => Boolean] = new Array[Array[List[String]] => Boolean](nGenres)
     genreTests(0) = isCountryGenre
     genreTests(1) = isHipHopGenre
-//    genreTests(2) = isPopGenre
+//    genreTests(0) = isPopGenre
 
     val trackGenreFlags: Array[Array[Boolean]] = Array.fill[Array[Boolean]](trackIDs.length)(Array.fill[Boolean](nGenres)(false))
     val trackGenre : Array[Int] = Array.fill[Int](trackIDs.length)(-1)
+    val trackTitle : Array[String] = Array.fill[String](trackIDs.length)("")
+    val trackArtist : Array[String] = Array.fill[String](trackIDs.length)("")
 
     val countCommon: AtomicInteger = new AtomicInteger(0)
 
@@ -152,6 +154,8 @@ object Driver {
       var count = 0
       while (j < nGenres) {
         if (trackGenreFlags(i)(j)) {
+          trackTitle(i)  = lastfmData(lastfmFilenameMap(trackIDs(i))).getOrElse("title", "").toString
+          trackArtist(i) = lastfmData(lastfmFilenameMap(trackIDs(i))).getOrElse("artist", "").toString
           println(s"Track ${trackIDs(i)} [${lastfmData(lastfmFilenameMap(trackIDs(i))).getOrElse("title", "")}] is of genre $j")
           trackGenre(i) = j
           count += 1
@@ -173,6 +177,7 @@ object Driver {
     workerThreads.shutdown()
 
     // Do LOOCV k-NN
+    /*
     var countCorrect = 0
     var countWrong = 0
     val include: Array[Boolean] = Array.fill[Boolean](trackIDs.length)(false)
@@ -210,7 +215,7 @@ object Driver {
       }
       i += 1
     }
-
+    */
 
     val genreOutput = new PrintWriter(new File("../data/genredata.dat"))
     i = 0
@@ -223,6 +228,30 @@ object Driver {
     genreOutput.println()
     genreOutput.close()
     println("Done with genre output")
+
+    val titleOutput = new PrintWriter(new File("../data/titledata.dat"))
+    i = 0
+    while (i < trackIDs.length) {
+      if (trackGenre(i) != -1) {
+        titleOutput.print(s"${trackTitle(i)}\n")
+      }
+      i += 1
+    }
+    titleOutput.println()
+    titleOutput.close()
+    println("Done with title output")
+
+    val artistOutput = new PrintWriter(new File("../data/artistdata.dat"))
+    i = 0
+    while (i < trackIDs.length) {
+      if (trackGenre(i) != -1) {
+        artistOutput.print(s"${trackArtist(i)}\n")
+      }
+      i += 1
+    }
+    artistOutput.println()
+    artistOutput.close()
+    println("Done with artist output")
 
     val wcOutput = new PrintWriter(new File("../data/wordcounts.dat"))
     i = 0
