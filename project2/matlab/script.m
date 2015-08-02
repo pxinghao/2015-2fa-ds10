@@ -1,16 +1,16 @@
 % features = [2     3     6     8    10    11    14    18    19    20    25    26    27    30    36    52    60    81   189   455   555];
-features = 1:4999;
+% features = 1:4999;
 
 genre = load('../data/genredata.dat');
 
 nGenres = max(genre);
 
 counts = spconvert(load('../data/wordcounts.dat'));
-counts = counts(:,features);
+% counts = counts(:,features);
 
 fid = fopen('../data/words.dat');
 words = textscan(fid,'%s','Delimiter','\n');
-words = words{1}(features);
+words = words{1};
 fclose(fid);
 nWords = length(words);
 
@@ -50,8 +50,8 @@ mean(predictions == genre)
 
 knnAccuracies = zeros([2 2]);
 
-for doBinary = 1:2
-  for doNormalize = 1:2
+for doBinary = 2%1:2
+  for doNormalize = 2%1:2
     
     fprintf('\ndoBinary = %i, doNormalize = %i\n',doBinary==2,doNormalize==2);
     

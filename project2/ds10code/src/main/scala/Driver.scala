@@ -92,7 +92,7 @@ object Driver {
 
 //    val tagMap: ConcurrentHashMap[String, Map[String, Any]] = new ConcurrentHashMap[String, Map[String, Any]]()
 
-    val lastfmFiles = FileParsers.recursiveListFiles(new File("../data/lastfm_subset/"), new Regex(".json"))
+    val lastfmFiles = FileParsers.recursiveListFiles(new File("../data/lastfm_test/"), new Regex(".json"))
     val lastfmData: Array[Map[String, Any]] = new Array[Map[String, Any]](lastfmFiles.length)
     val lastfmFilenameMap = new mutable.HashMap[String, Int]()
     (0 until lastfmFiles.length).foreach(fi => lastfmFilenameMap(lastfmFiles(fi).getName.dropRight(5)) = fi)
